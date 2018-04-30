@@ -1,6 +1,6 @@
 FROM ubuntu:16.04
 
-MAINTAINER Hugo Matalonga <hugo@hmatalonga.com>
+MAINTAINER Hugo Matalonga <dev@hmatalonga.com>
 
 # Docker Android image for development environment
 ENV ANDROID_HOME /opt/android-sdk-linux
@@ -20,12 +20,12 @@ RUN echo y | android update sdk --no-ui --all --filter platform-tools | grep 'pa
 RUN echo y | android update sdk --no-ui --all --filter extra-android-support | grep 'package installed'
 
 # SDK
-RUN echo y | android update sdk --no-ui --all --filter android-25 | grep 'package installed'
+RUN echo y | android update sdk --no-ui --all --filter android-27 | grep 'package installed'
 
 # build tools
-RUN echo y | android update sdk --no-ui --all --filter build-tools-25.0.3 | grep 'package installed'
+RUN echo y | android update sdk --no-ui --all --filter build-tools-27.0.3 | grep 'package installed'
 
-# For the moment an Android image for emulator is not necessary RUN echo y | android update sdk --no-ui --all --filter sys-img-armeabi-v7a-android-25 | grep 'package installed' extras
+# For the moment an Android image for emulator is not necessary RUN echo y | android update sdk --no-ui --all --filter sys-img-armeabi-v7a-android-27 | grep 'package installed' extras
 RUN echo y | android update sdk --no-ui --all --filter extra-android-m2repository | grep 'package installed'
 
 # Cleaning
