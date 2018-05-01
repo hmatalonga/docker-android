@@ -1,34 +1,37 @@
-FROM ubuntu:16.04
+# Forked from https://github.com/alvr/alpine-android
+# Original author: https://github.com/alvr
 
+FROM openjdk:8-alpine
 MAINTAINER Hugo Matalonga <dev@hmatalonga.com>
 
 # Docker Android image for development environment
-ENV ANDROID_HOME /opt/android-sdk-linux
-ENV ANDROID_SDK_URL https://dl.google.com/android/repository/sdk-tools-linux-3859397.zip
+ENV SDK_TOOLS "3859397"
+ENV BUILD_TOOLS "27.0.3"
+ENV TARGET_SDK "27"
+ENV ANDROID_HOME "/opt/android-sdk-linux"
+ENV GLIBC_VERSION "2.27-r0"
 
-RUN dpkg --add-architecture i386
-RUN apt-get update -qq
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y curl openjdk-8-jdk libc6:i386 libstdc++6:i386 libgcc1:i386 libncurses5:i386 libz1:i386
+# Install required dependencies
+RUN apk add --no-cache --virtual=.build-dependencies wget unzip ca-certificates bash && \
+	wget https://raw.githubusercontent.com/sgerrand/alpine-pkg-glibc/master/sgerrand.rsa.pub -O /etc/apk/keys/sgerrand.rsa.pub && \
+	wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/${GLIBC_VERSION}/glibc-${GLIBC_VERSION}.apk -O /tmp/glibc.apk && \
+	wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/${GLIBC_VERSION}/glibc-bin-${GLIBC_VERSION}.apk -O /tmp/glibc-bin.apk && \
+	apk add --no-cache /tmp/glibc.apk /tmp/glibc-bin.apk && \
+	rm -rf /tmp/* && \
+	rm -rf /var/cache/apk/*
 
-# Download Android SDK tools
-RUN mkdir -p /opt && curl -sL ${ANDROID_SDK_URL} | tar xz -C /opt
-ENV PATH ${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools
+# Download and extract Android Tools
+RUN wget http://dl.google.com/android/repository/sdk-tools-linux-${SDK_TOOLS}.zip -O /tmp/tools.zip && \
+	mkdir -p ${ANDROID_HOME} && \
+	unzip /tmp/tools.zip -d ${ANDROID_HOME} && \
+	rm -v /tmp/tools.zip
 
-# platform tools
-RUN echo y | android update sdk --no-ui --all --filter platform-tools | grep 'package installed'
-RUN echo y | android update sdk --no-ui --all --filter extra-android-support | grep 'package installed'
-
-# SDK
-RUN echo y | android update sdk --no-ui --all --filter android-27 | grep 'package installed'
-
-# build tools
-RUN echo y | android update sdk --no-ui --all --filter build-tools-27.0.3 | grep 'package installed'
-
-# For the moment an Android image for emulator is not necessary RUN echo y | android update sdk --no-ui --all --filter sys-img-armeabi-v7a-android-27 | grep 'package installed' extras
-RUN echo y | android update sdk --no-ui --all --filter extra-android-m2repository | grep 'package installed'
-
-# Cleaning
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+# Install SDK Packages
+RUN mkdir -p /root/.android/ && touch /root/.android/repositories.cfg && \
+	yes | ${ANDROID_HOME}/tools/bin/sdkmanager "--licenses" && \
+	${ANDROID_HOME}/tools/bin/sdkmanager "--update" && \
+    ${ANDROID_HOME}/tools/bin/sdkmanager "build-tools;${BUILD_TOOLS}" "platform-tools" "platforms;android-${TARGET_SDK}" "extras;android;m2repository" "extras;google;google_play_services" "extras;google;m2repository"
 
 # Create app directory
-RUN mkdir -p /usr/src/app WORKDIR /usr/src/app
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
