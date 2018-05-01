@@ -12,8 +12,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y curl openjdk-8-jdk libc6:i
 
 # Download Android SDK tools
 RUN mkdir -p /opt && curl -sL ${ANDROID_SDK_URL} | tar xz -C /opt
-E
-NV PATH ${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools
+ENV PATH ${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools
 
 # platform tools
 RUN echo y | android update sdk --no-ui --all --filter platform-tools | grep 'package installed'
