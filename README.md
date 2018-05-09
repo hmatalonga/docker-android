@@ -9,8 +9,7 @@ $ docker build -t hmatalonga/docker-android .    # Only necessary for first buil
 $ docker run -it --name container-name \         # Choose a container name
 -v `pwd`:/usr/src/app \                          # DO NOT change this src path
 hmatalonga/docker-android \
-/bin/sh -c \
-"./gradlew someTask"
+bash
 ```
 
 ## License
